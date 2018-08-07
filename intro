@@ -1,0 +1,19 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Aug  5 12:57:31 2018
+
+@author: imaneguetni
+"""
+
+#Simulation for blog : Introduction to Fenics project
+
+"""
+FEniCS tutorial demo program: Heat equation with Dirichlet conditions.
+Test problem is chosen to give an exact solution at all nodes of the mesh.
+  u'= Laplace(u) + f  in the unit square
+  u = u_D             on the boundary
+  u = u_0             at t = 0
+  u = 1 + x^2 + alpha*y^2 + \beta*t
+  f = beta - 2 - 2*alpha
+"""
