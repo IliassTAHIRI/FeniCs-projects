@@ -15,6 +15,8 @@ its left end and deformed under its own weight.
 
 #from __future__ import print_function
 from fenics import *
+import matplotlib.pyplot as plt
+import matplotlib.tri as tri
 
 # Scaled variables
 L = 1; W = 0.2
@@ -74,6 +76,11 @@ plot(von_Mises, title='Stress intensity')
 u_magnitude = sqrt(dot(u, u))
 u_magnitude = project(u_magnitude, V)
 plot(u_magnitude, 'Displacement magnitude')
+
+
+
+
+
 print('min/max u:',
       u_magnitude.vector().array().min(),
       u_magnitude.vector().array().max())

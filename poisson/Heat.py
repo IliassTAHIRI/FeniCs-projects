@@ -1,49 +1,44 @@
-"""
-FEniCS tutorial demo program: Heat equation with Dirichlet conditions.
-Test problem is chosen to give an exact solution at all nodes of the mesh.
-  u'= Laplace(u) + f  in the unit square
-  u = u_D             on the boundary
-  u = u_0             at t = 0
-  u = 1 + x^2 + alpha*y^2 + \beta*t
-  f = beta - 2 - 2*alpha
-"""
-
-from __future__ import print_function
 from fenics import *
-import numpy as np
+import time
 
 T = 2.0            # final time
-num_steps = 10     # number of time steps
+num_steps = 50     # number of time steps
 dt = T / num_steps # time step size
-alpha = 3          # parameter alpha
-beta = 1.2         # parameter beta
 
 # Create mesh and define function space
-nx = 30
-ny = 8
-mesh = UnitSquareMesh(nx, ny)
+nx = ny = 30
+mesh = RectangleMesh(Point(-2, -2), Point(2, 2), nx, ny)
 V = FunctionSpace(mesh, 'P', 1)
 
 # Define boundary condition
-u_D = Expression('1 + x[0]*x[0] + alpha*x[1]*x[1] + beta*t',
-                 degree=2, alpha=alpha, beta=beta, t=0)
-
 def boundary(x, on_boundary):
     return on_boundary
 
-bc = DirichletBC(V, u_D, boundary)
+bc = DirichletBC(V, Constant(0), boundary)
 
 # Define initial value
-u_n = interpolate(u_D, V)
-#u_n = project(u_D, V)
+u_0 = Expression('exp(-a)',
+                 degree=2, a=5)
+u_n = interpolate(u_0, V)
+
+def q(u):
+    return u
 
 # Define variational problem
 u = TrialFunction(V)
 v = TestFunction(V)
-f = Constant(beta - 2 - 2*alpha)
+f = Constant(10)
 
-F = u*v*dx + dt*dot(grad(u), grad(v))*dx - (u_n + dt*f)*v*dx
-a, L = lhs(F), rhs(F)
+F = q(u)*u*v*dx - dt*u*dot(grad(u), grad(v))*dx - q(u_n)*u_n*v*dx
+#a, L = lhs(F), rhs(F)
+
+u_ = Function(V)      # the most recently computed solution
+F  = inner(q(u)*nabla_grad(u), nabla_grad(v))*dx
+F  = action(F, u_)
+
+J  = derivative(F, u_, u)   # Gateaux derivative in dir. of u# Create VTK file for saving solution
+vtkfile = File('heat_gaussian/s.pvd')
+vtkfile2 = File('heat_gaussian/solution2.pvd')
 
 # Time-stepping
 u = Function(V)
@@ -52,18 +47,16 @@ for n in range(num_steps):
 
     # Update current time
     t += dt
-    u_D.t = t
-    print(t)
+
     # Compute solution
-    solve(a == L, u, bc)
-
-    # Plot solution
+    #solve(a == L, u, bc)
+    problem = NonlinearVariationalProblem(F, u_, bc, J)
+    solver  = NonlinearVariationalSolver(problem)
+    solver.solve()
+    # Save to file and plot solution
+    vtkfile << (u, t)
+    vtkfile << (u_, t)
     plot(u)
-
-    # Compute error at vertices
-    u_e = interpolate(u_D, V)
-    error = np.abs(u_e.vector().array() - u.vector().array()).max()
-    print('t = %.2f: error = %.3g' % (t, error))
 
     # Update previous solution
     u_n.assign(u)
