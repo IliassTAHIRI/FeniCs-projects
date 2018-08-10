@@ -14,15 +14,15 @@ V = FunctionSpace(mesh, 'P', 1)
 def boundary(x, on_boundary):
     return on_boundary
 
-bc = DirichletBC(V, Constant(0), boundary)
+bc = DirichletBC(V, Constant(10.0), boundary)
 
 # Define initial value
-u_0 = Expression('exp(-a)',
-                 degree=2, a=5)
+u_0 = Expression('-a',
+                 degree=2, a=0)
 u_n = interpolate(u_0, V)
 
 def q(u):
-    return u
+    return 1/(u**2+1)
 
 # Define variational problem
 u = TrialFunction(V)
@@ -37,8 +37,8 @@ F  = inner(q(u)*nabla_grad(u), nabla_grad(v))*dx
 F  = action(F, u_)
 
 J  = derivative(F, u_, u)   # Gateaux derivative in dir. of u# Create VTK file for saving solution
-vtkfile = File('heat_gaussian/s.pvd')
-vtkfile2 = File('heat_gaussian/solution2.pvd')
+vtkfile = File('heat_gaussian/ss.pvd')
+
 
 # Time-stepping
 u = Function(V)
@@ -57,7 +57,7 @@ for n in range(num_steps):
     vtkfile << (u, t)
     vtkfile << (u_, t)
     plot(u)
-
+    plot(u_)
     # Update previous solution
     u_n.assign(u)
 
