@@ -36,9 +36,14 @@ V = VectorFunctionSpace(mesh, 'P', 1)
 tol = 1E-14
 
 def clamped_boundary(x, on_boundary):
-    return on_boundary and x[0] < tol
+    return on_boundary and near(x[0],0,tol)
 
-bc = DirichletBC(V, Constant((0, 0, 0)), clamped_boundary)
+def clamped_boundary2(x, on_boundary):
+    return on_boundary and near(x[0],1,tol)
+
+bc1 = DirichletBC(V, Constant((0, 0, 0)), clamped_boundary)
+bc2 = DirichletBC(V, Constant((0, 20, 0)), clamped_boundary2)
+bc=[bc1, bc2]
 
 # Define strain and stress
 
@@ -86,9 +91,9 @@ print('min/max u:',
       u_magnitude.vector().array().max())
 
 # Save solution to file in VTK format
-File('elasticity/displacement.pvd') << u
-File('elasticity/von_mises.pvd') << von_Mises
-File('elasticity/magnitude.pvd') << u_magnitude
+File('elasticity/displacement2.pvd') << u
+File('elasticity/von_mises2.pvd') << von_Mises
+File('elasticity/magnitude2.pvd') << u_magnitude
 
 # Hold plot
 interactive()

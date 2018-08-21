@@ -4,7 +4,7 @@ import numpy as np
 # Parameters
 c = 1.25
 l = 5.0 
-P_surf = 0.0 
+P_surf = 1.0 
 sigma_0 = 3.0 
 gamma = 0.65 
 P0 = sigma_0*gamma 
@@ -58,7 +58,7 @@ der_w_D = Expression(('near(x[0],0.0) ? der_w_top : 0.0','0.0'),degree=0, \
 
 # Set the displacement at the porous medium's bottom to 0 (first dimension of
 # the second subsystem of the FunctionSpace V).
-bc_w = DirichletBC(V.sub(1).sub(0),Constant(0.0),bottom_boundary)
+bc_w = DirichletBC(V.sub(1).sub(0),Constant(10.0),bottom_boundary)
 
 # Combine the Dirichlet boundary conditions.
 bc = [bc_p, bc_w]
@@ -104,7 +104,7 @@ problem = NonlinearVariationalProblem(F, u_, bc, J)
 solver = NonlinearVariationalSolver(problem)
 prm = solver.parameters.newton_solver
 prm.error_on_nonconvergence = False
-
+vtkfile = File('sol.pvd')
 # Form and solve the linear system.
 for n in range(num_steps):
 
@@ -120,6 +120,5 @@ for n in range(num_steps):
     # Update the progress bar.
     progress.update(t/T)
     
-vtkfile = File('poisson/solution.pvd')
-vtkfile << u
-vtkfile << p
+
+    vtkfile << u

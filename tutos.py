@@ -24,9 +24,9 @@ num_steps = 40
 # The step size
 dt = (T-t)/num_steps
 # Width of the porous medium (y-axis length).
-width = 3.0
+width = 5.0
 # Thickness of the porous medium (z-axis length).
-thickness = 2.0
+thickness = 1.0
 
 # Create mesh and define function space.
 # Mesh for the 2-D case.
@@ -120,7 +120,5 @@ for n in range(num_steps):
     # Update the progress bar.
     progress.update(t/T)
     
-vtkfile = File('poisson/solution.pvd')
+vtkfile = File('results.pvd')
 vtkfile << u
-vtkfile << p_
-vtkfile << w_
